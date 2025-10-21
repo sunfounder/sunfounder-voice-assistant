@@ -1,5 +1,4 @@
 import os
-import logging
 import wave
 from pathlib import Path
 from typing import Callable, List

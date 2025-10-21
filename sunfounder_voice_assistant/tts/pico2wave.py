@@ -1,8 +1,6 @@
 from ..utils import is_installed, run_command, check_executable
 from .base import TTSBase
 
-import logging
-
 class Pico2Wave(TTSBase):
     """ Pico2Wave TTS engine. """
     PICO2WAVE = 'pico2wave'

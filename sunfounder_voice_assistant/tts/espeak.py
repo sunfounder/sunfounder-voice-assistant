@@ -1,8 +1,6 @@
 from ..utils import is_installed, run_command, check_executable
 from .base import TTSBase
 
-import logging
-
 class Espeak(TTSBase):
     """ Espeak TTS engine """
     ESPEAK = 'espeak'

@@ -1,6 +1,5 @@
 import requests
 import os
-import logging
 import pyaudio
 from .base import TTSBase
 

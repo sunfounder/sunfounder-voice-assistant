@@ -1,3 +1,4 @@
+import logging
 
 class TTSBase:
     def __init__(self, log: logging.Logger = None):
