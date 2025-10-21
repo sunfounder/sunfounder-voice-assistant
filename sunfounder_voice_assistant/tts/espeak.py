@@ -1,5 +1,6 @@
 from ..utils import is_installed, run_command, check_executable
 from .base import TTSBase
+from ..audio_player import AudioPlayer
 
 class Espeak(TTSBase):
     """ Espeak TTS engine """
@@ -17,22 +18,34 @@ class Espeak(TTSBase):
         self._pitch = 50
         self._lang = 'en-US'
 
+    def tts(self, words: str, file_path: str) -> None:
+        """ Text-to-speech with espeak
+
+        Args:
+            words (str): Word to say
+            file_path (str): Path to save audio file
+        """
+        self.log.debug(f'espeak: [{words}]')
+        if not check_executable('espeak'):
+            self.log.debug('espeak is busy. Pass')
+
+        cmd = f'espeak -a{self._amp} -s{self._speed} -g{self._gap} -p{self._pitch} "{words}" -w {file_path}'
+        _, result = run_command(cmd)
+        if len(result) != 0:
+            raise Exception(f'tts-espeak:\n\t{result}')
+        self.log.debug(f'command: {cmd}')
+
     def say(self, words: str) -> None:
         """ Say words with espeak
 
         Args:
             words (str): Words to say
         """
-        self.log.debug(f'espeak: [{words}]')
-        if not check_executable('espeak'):
-            self.log.debug('espeak is busy. Pass')
-
-        cmd = f'espeak -a{self._amp} -s{self._speed} -g{self._gap} -p{self._pitch} "{words}" --stdout | aplay 2>/dev/null & '
-        _, result = run_command(cmd)
-        if len(result) != 0:
-            raise (f'tts-espeak:\n\t{result}')
-        self.log.debug(f'command: {cmd}')
-
+        file = '/tmp/espeak.wav'
+        self.tts(words, file)
+        with AudioPlayer() as player:
+            player.play_file(file)
+        
     def set_amp(self, amp: int) -> None:
         """ Set amplitude
 

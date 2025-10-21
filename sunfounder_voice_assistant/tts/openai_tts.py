@@ -1,7 +1,9 @@
 import requests
 import os
-import pyaudio
+from ..audio_player import AudioPlayer
 from .base import TTSBase
+
+from typing import Optional
 
 def volume_gain(input_file, output_file, gain):
     """ Apply volume gain to audio file.
@@ -87,13 +89,13 @@ class OpenAI_TTS(TTSBase):
 
         self.set_api_key(api_key)
 
-    def tts(self, words: str, output_file: str="/tmp/openai_tts.wav", instructions: str=DEFAULT_INSTRUCTIONS, stream: bool=False) -> bool:
+    def tts(self, words: str, output_file: str="/tmp/openai_tts.wav", instructions: Optional[str]=None, stream: bool=False) -> bool:
         """ Request OpenAI TTS API.
 
         Args:
             words (str): Words to say.
             output_file (str, optional): Output file, default is '/tmp/openai_tts.wav'.
-            instructions (str, optional): Instructions, default is DEFAULT_INSTRUCTIONS.
+            instructions (str, optional): Instructions, default is None.
             stream (bool, optional): Whether to stream the audio, default is False.
 
         Returns:
@@ -110,8 +112,10 @@ class OpenAI_TTS(TTSBase):
             "input": words,
             "voice": self._voice,
             "response_format": "wav",
-            "instructions": instructions,
         }
+        
+        if instructions:
+            data["instructions"] = instructions
         
         try:
             response = requests.post(self.URL, json=data, headers=headers, stream=True)
@@ -126,12 +130,6 @@ class OpenAI_TTS(TTSBase):
                         if chunk:
                             f.write(chunk)
                 
-                if self._gain > 1:
-                    old_output_file = output_file.replace('.wav', f'_old.wav')
-                    os.rename(output_file, old_output_file)
-                    volume_gain(old_output_file, output_file, self._gain)
-                    os.remove(old_output_file)
-
             return True
         
         except requests.exceptions.RequestException as e:
@@ -147,27 +145,17 @@ class OpenAI_TTS(TTSBase):
         Args:
             response (requests.Response): Response from OpenAI TTS API.
         """
-        p = pyaudio.PyAudio()
+        with AudioPlayer() as player:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    player.play(chunk)
         
-        stream = p.open(format=p.get_format_from_width(2),
-                        channels=1,
-                        rate=22050,
-                        output=True)
-        
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                stream.write(chunk)
-        
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
-
-    def say(self, words: str, instructions: str=DEFAULT_INSTRUCTIONS, stream: bool=True) -> None:
+    def say(self, words: str, instructions: Optional[str]=None, stream: bool=True) -> None:
         """ Say words.
 
         Args:
             words (str): Words to say.
-            instructions (str, optional): Instructions, default is DEFAULT_INSTRUCTIONS.
+            instructions (str, optional): Instructions, default is None.
             stream (bool, optional): Whether to stream the audio, default is True.
         """
         if stream:
@@ -175,8 +163,8 @@ class OpenAI_TTS(TTSBase):
         else:
             file_name = "/tmp/openai_tts.wav"
             self.tts(words, instructions=instructions, output_file=file_name, stream=False)
-            os.system(f'aplay {file_name}')
-            os.remove(file_name)
+            with AudioPlayer(gain=self._gain) as player:
+                player.play_file(file_name)
 
     def set_voice(self, voice: str) -> None:
         """ Set voice.

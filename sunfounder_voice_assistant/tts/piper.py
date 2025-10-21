@@ -35,8 +35,6 @@ class Piper(TTSBase):
         else:
             self.piper = None
         
-        self.music = Music()
-
     def get_language(self) -> str:
         """ Get language from model.
 
@@ -169,11 +167,10 @@ class Piper(TTSBase):
         if stream:
             self.stream(text)
         else:
-            self.tts(text, "/tmp/tts_piper.wav")
-            self.music.sound_play("/tmp/tts_piper.wav")
-            # with AudioPlayer(self.piper.config.sample_rate) as player:
-            #     with open("/tmp/tts_piper.wav", "rb") as f:
-            #         player.play(f.read())
+            file = "/tmp/tts_piper.wav"
+            self.tts(text, file)
+            with AudioPlayer() as player:
+                player.play_file(file)
 
     def available_models(self, country: str = None) -> List[str]:
         """ Get available models.
