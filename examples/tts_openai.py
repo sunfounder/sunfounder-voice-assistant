@@ -1,4 +1,4 @@
-from sunfounder_voice_assistant.tts import OpenAI_TTS, Model, Voice
+from sunfounder_voice_assistant.tts import OpenAI_TTS, Voice
 from secret import OPENAI_API_KEY
 
 # Export your OpenAI_API_KEY before running the script
