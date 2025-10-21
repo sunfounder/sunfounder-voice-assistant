@@ -1,13 +1,11 @@
-from sunfounder_voice_assistant.tts import OpenAI_TTS
+from sunfounder_voice_assistant.tts import OpenAI_TTS, Model, Voice
 from secret import OPENAI_API_KEY
 
 # Export your OpenAI_API_KEY before running the script
 # export OPENAI_API_KEY="sk-proj-xxxxxx"
 
 tts = OpenAI_TTS(api_key=OPENAI_API_KEY)
-# tts.set_model('tts-1')
-tts.set_model('gpt-4o-mini-tts')
-tts.set_voice('alloy')
+tts.set_voice(Voice.ALLOY)
 
 msg = "Hello! I'm OpenAI TTS."
 print(f"Say: {msg}")

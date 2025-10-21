@@ -1,83 +1,52 @@
 import requests
-import os
 from ..audio_player import AudioPlayer
 from .base import TTSBase
 
 from typing import Optional
+from enum import StrEnum
 
-def volume_gain(input_file, output_file, gain):
-    """ Apply volume gain to audio file.
+class Voice(StrEnum):
+    """ Voice enum. """
 
-    Args:
-        input_file (str): Input audio file path.
-        output_file (str): Output audio file path.
-        gain (float): Gain factor.
+    ALLOY = "alloy"
+    ASH = "ash"
+    BALLAD = "ballad"
+    CORAL = "coral"
+    ECHO = "echo"
+    FABLE = "fable"
+    NOVA = "nova"
+    ONYX = "onyx"
+    SAGE = "sage"
+    SHIMMER = "shimmer"
 
-    Returns:
-        bool: True if success, False otherwise.
-    """
-    import sox
+class Model(StrEnum):
+    """ Model enum. """
 
-    try:
-        transform = sox.Transformer()
-        transform.vol(gain)
-
-        transform.build(input_file, output_file)
-
-        return True
-    except Exception as e:
-        print(f"[ERROR] volume_gain err: {e}")
-        return False
+    GPT_4O_MINI_TTS = "gpt-4o-mini-tts"
 
 class OpenAI_TTS(TTSBase):
     """ OpenAI TTS engine. """
-    WHISPER = 'whisper'
 
-    MODLES = [
-        "tts-1",
-        "tts-1-hd",
-        "gpt-4o-mini-tts",
-        "accent",
-        "emotional-range",
-        "intonation",
-        "impressions",
-        "speed-of-speech",
-        "tone",
-        "whispering",
-    ]
-
-    VOICES = [
-        "alloy",
-        "ash",
-        "ballad",
-        "coral",
-        "echo",
-        "fable",
-        "nova",
-        "onyx",
-        "sage",
-        "shimmer"
-    ]
-
-    DEFAULT_MODEL = 'tts-1'
-    DEFAULT_VOICE = 'alloy'
+    DEFAULT_MODEL = Model.GPT_4O_MINI_TTS
+    DEFAULT_VOICE = Voice.ALLOY
     DEFAULT_INSTRUCTIONS = "Speak in a cheerful and positive tone."
 
     URL = "https://api.openai.com/v1/audio/speech"
+    AUDIO_FORMAT = 'wav'
 
     def __init__(self, *args,
-        voice: str=DEFAULT_VOICE,
-        model: str=DEFAULT_MODEL,
+        voice: Voice=DEFAULT_VOICE,
+        model: Model=DEFAULT_MODEL,
         api_key: str=None,
-        gain: float=3,
+        gain: float=1.5,
         **kwargs) -> None:
         """ Initialize OpenAI TTS engine.
 
         Args:
-            voice (str, optional): Voice, default is 'alloy'.
-            model (str, optional): Model, default is 'tts-1'.
+            voice (Voice, optional): Voice, default is Voice.ALLOY.
+            model (Model, optional): Model, default is Model.GPT_4O_MINI_TTS.
             api_key (str, optional): API key.
-            gain (float, optional): Volume gain, default is 3.
+            gain (float, optional): Volume gain, default is 1.5.
             log (logging.Logger, optional): Logger, default is None.
         """
         super().__init__(*args, **kwargs)
@@ -89,7 +58,7 @@ class OpenAI_TTS(TTSBase):
 
         self.set_api_key(api_key)
 
-    def tts(self, words: str, output_file: str="/tmp/openai_tts.wav", instructions: Optional[str]=None, stream: bool=False) -> bool:
+    def tts(self, words: str, output_file: str=f"/tmp/openai_tts.{AUDIO_FORMAT}", instructions: Optional[str]=None, stream: bool=False) -> bool:
         """ Request OpenAI TTS API.
 
         Args:
@@ -108,27 +77,28 @@ class OpenAI_TTS(TTSBase):
         }
         
         data = {
-            "model": self._model,
+            "model": self._model.value,
             "input": words,
-            "voice": self._voice,
-            "response_format": "wav",
+            "voice": self._voice.value,
+            "response_format": self.AUDIO_FORMAT,
         }
         
         if instructions:
             data["instructions"] = instructions
         
         try:
-            response = requests.post(self.URL, json=data, headers=headers, stream=True)
-            
+            response = requests.post(self.URL, json=data, headers=headers, stream=stream)
             response.raise_for_status()
-            
+                
             if stream:
-                self._stream_audio(response)
-            else:
-                with open(output_file, "wb") as f:
+                with AudioPlayer(gain=self._gain) as player:
                     for chunk in response.iter_content(chunk_size=1024):
                         if chunk:
-                            f.write(chunk)
+                            player.play(chunk)
+            else:
+                content = response.content
+                with open(output_file, "wb") as f:
+                    f.write(content)
                 
             return True
         
@@ -139,17 +109,6 @@ class OpenAI_TTS(TTSBase):
             self.log.error(f"OpenAI TTS API file operation error: {e}")
             return False
 
-    def _stream_audio(self, response: requests.Response) -> None:
-        """ Stream audio from response.
-
-        Args:
-            response (requests.Response): Response from OpenAI TTS API.
-        """
-        with AudioPlayer() as player:
-            for chunk in response.iter_content(chunk_size=1024):
-                if chunk:
-                    player.play(chunk)
-        
     def say(self, words: str, instructions: Optional[str]=None, stream: bool=True) -> None:
         """ Say words.
 
@@ -161,7 +120,7 @@ class OpenAI_TTS(TTSBase):
         if stream:
             self.tts(words, instructions=instructions, stream=True)
         else:
-            file_name = "/tmp/openai_tts.wav"
+            file_name = f"/tmp/openai_tts.{self.AUDIO_FORMAT}"
             self.tts(words, instructions=instructions, output_file=file_name, stream=False)
             with AudioPlayer(gain=self._gain) as player:
                 player.play_file(file_name)
