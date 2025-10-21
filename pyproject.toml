@@ -1,0 +1,40 @@
+
+[build-system]
+requires = ["setuptools >= 61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sunfounder-voice-assistant"
+authors = [
+  { name="sunfounder", email="service@sunfounder.com" },
+]
+description = "SunFounder Voice Assistant Python library for Raspberry Pi"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: POSIX :: Linux",
+]
+keywords = ["sunfounder", "voice", "assistant", "stt", "tts", "llm", "ollama", "grok", "gemimi", "openai", "piper", "vosk"]
+dynamic = ["version"]
+
+dependencies = [
+  'piper-tts',
+  'vosk',
+  'sox',
+  'sounddevice'
+]
+
+[project.scripts]
+# fusion_hat = "fusion_hat.script:fusion_hat_cmd"
+
+[project.urls]
+Repository = "https://github.com/sunfounder/sunfounder-voice-assistant
+Issues = "https://github.com/sunfounder/sunfounder-voice-assistant/issues"
+
+[tool.setuptools.packages.find]
+include = ["sunfounder_voice_addidtant*"] # * means include all subpackages
+
+[tool.setuptools.dynamic]
+version = {attr = "sunfounder_voice_assistant.version.__version__"}
