@@ -1,4 +1,4 @@
-from fusion_hat.llm import Ollama
+from sunfounder_voice_assistant.llm import Ollama
 '''
 You can run llm locally! with ollama
 

@@ -1,4 +1,4 @@
-from fusion_hat.tts import Espeak
+from sunfounder_voice_assistant.tts import Espeak
 
 tts = Espeak()
 # Set amplitude 0-200, default 100

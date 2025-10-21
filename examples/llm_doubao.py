@@ -1,4 +1,4 @@
-from fusion_hat.llm import Doubao
+from sunfounder_voice_assistant.llm import Doubao
 from secret import DOUBAO_API_KEY
 
 INSTRUCTIONS = "You are a helpful assistant."
