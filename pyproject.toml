@@ -23,6 +23,7 @@ dependencies = [
   'piper-tts',
   'vosk',
   'sox',
+  'pyaudio',
   'sounddevice'
 ]
 
@@ -30,8 +31,8 @@ dependencies = [
 Repository = "https://github.com/sunfounder/sunfounder-voice-assistant"
 Issues = "https://github.com/sunfounder/sunfounder-voice-assistant/issues"
 
-[tool.setuptools.packages.find]
-include = ["sunfounder_voice_assistant*"] # * means include all subpackages
+[tool.setuptools]
+packages = ["sunfounder_voice_assistant"]
 
 [tool.setuptools.dynamic]
 version = {attr = "sunfounder_voice_assistant.version.__version__"}
