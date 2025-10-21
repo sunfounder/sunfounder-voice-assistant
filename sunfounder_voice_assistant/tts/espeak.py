@@ -1,14 +1,15 @@
-from ..utils import is_installed, run_command, check_executable, enable_speaker
+from ..utils import is_installed, run_command, check_executable
+from .base import TTSBase
+
 import logging
 
-class Espeak():
+class Espeak(TTSBase):
     """ Espeak TTS engine """
     ESPEAK = 'espeak'
 
-    def __init__(self, log: logging.Logger=None) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """ Initialize espeak TTS engine """
-        self.log = log or logging.getLogger(__name__)
-        enable_speaker()
+        super().__init__(*args, **kwargs)
 
         if not is_installed("espeak"):
             raise Exception("TTS engine: espeak is not installed.")

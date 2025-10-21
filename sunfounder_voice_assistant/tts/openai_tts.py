@@ -2,7 +2,7 @@ import requests
 import os
 import logging
 import pyaudio
-from ..utils import enable_speaker
+from .base import TTSBase
 
 def volume_gain(input_file, output_file, gain):
     """ Apply volume gain to audio file.
@@ -28,7 +28,7 @@ def volume_gain(input_file, output_file, gain):
         print(f"[ERROR] volume_gain err: {e}")
         return False
 
-class OpenAI_TTS():
+class OpenAI_TTS(TTSBase):
     """ OpenAI TTS engine. """
     WHISPER = 'whisper'
 
@@ -69,7 +69,7 @@ class OpenAI_TTS():
         model: str=DEFAULT_MODEL,
         api_key: str=None,
         gain: float=3,
-        log: logging.Logger=None) -> None:
+        **kwargs) -> None:
         """ Initialize OpenAI TTS engine.
 
         Args:
@@ -79,8 +79,7 @@ class OpenAI_TTS():
             gain (float, optional): Volume gain, default is 3.
             log (logging.Logger, optional): Logger, default is None.
         """
-        self.log = log or logging.getLogger(__name__)
-        enable_speaker()
+        super().__init__(*args, **kwargs)
 
         self._model = model or self.DEFAULT_MODEL
         self._voice = voice or self.DEFAULT_VOICE

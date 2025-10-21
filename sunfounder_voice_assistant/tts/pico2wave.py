@@ -1,7 +1,9 @@
-from ..utils import is_installed, run_command, check_executable, enable_speaker
+from ..utils import is_installed, run_command, check_executable
+from .base import TTSBase
+
 import logging
 
-class Pico2Wave():
+class Pico2Wave(TTSBase):
     """ Pico2Wave TTS engine. """
     PICO2WAVE = 'pico2wave'
 
@@ -13,15 +15,13 @@ class Pico2Wave():
         'fr-FR',
         'it-IT',
     ]
-    def __init__(self, lang: str=None, log: logging.Logger=None) -> None:
+    def __init__(self, *args, lang: str=None, **kwargs) -> None:
         """ Initialize the pico2wave TTS engine.
 
         Args:
             lang (str, optional): language, leave it None to use default language, defaults to 'en-US'
-            log (logging.Logger, optional): logger, leave it None to use default logger, defaults to None
         """
-        self.log = log or logging.getLogger(__name__)
-        enable_speaker()
+        super().__init__(*args, **kwargs)
 
         if not is_installed("pico2wave"):
             raise Exception("TTS engine: pico2wave is not installed.")

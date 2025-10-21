@@ -32,9 +32,7 @@ ANSWER_ON_WAKE = "Hi there"
 WELCOME = f"Hi, I'm {NAME}. Wake me up with: " + ", ".join(WAKE_WORD)
 
 # Set instructions
-INSTRUCTIONS = f"""
-You are a helpful assistant, named {NAME}.
-"""
+INSTRUCTIONS = f"You are a helpful assistant, named {NAME}."
 
 class VoiceAssistant:
     """ Voice assistant class """
