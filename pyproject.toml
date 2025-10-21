@@ -26,9 +26,6 @@ dependencies = [
   'sounddevice'
 ]
 
-[project.scripts]
-# fusion_hat = "fusion_hat.script:fusion_hat_cmd"
-
 [project.urls]
 Repository = "https://github.com/sunfounder/sunfounder-voice-assistant
 Issues = "https://github.com/sunfounder/sunfounder-voice-assistant/issues"
