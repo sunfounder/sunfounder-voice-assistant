@@ -54,9 +54,8 @@ def redirect_error_2_null() -> int:
     Returns:
         int: old stderr
     """
-    import sys
+    import os, sys
     # https://github.com/spatialaudio/python-sounddevice/issues/11
-    import os
 
     devnull = os.open(os.devnull, os.O_WRONLY)
     old_stderr = os.dup(2)
@@ -71,7 +70,7 @@ def cancel_redirect_error(old_stderr: int) -> None:
     Args:
         old_stderr (int): old stderr
     """
-    import os
+    import os, sys
     sys.stderr.flush()
     os.dup2(old_stderr, 2)
     os.close(old_stderr)

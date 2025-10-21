@@ -2,6 +2,7 @@ from .llm import OpenAI as LLM
 from .stt import Vosk as STT
 from .tts import Piper as TTS
 from .keyboard_input import KeyboardInput
+from typing import Callable
 
 import time
 import threading
@@ -155,11 +156,11 @@ class VoiceAssistant:
         """
         return text
 
-    def add_trigger(self, trigger_function: function) -> None:
+    def add_trigger(self, trigger_function: Callable[[], tuple[bool, bool, str]]) -> None:
         """ Add trigger function
 
         Args:
-            trigger_function (function): Trigger function
+            trigger_function (Callable[[], tuple[bool, bool, str]]): Trigger function
         """
         self.triggers.append(trigger_function)
 
