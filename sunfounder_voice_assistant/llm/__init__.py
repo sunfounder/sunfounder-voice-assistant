@@ -55,7 +55,7 @@ class Ollama(LLM):
         Raises:
             ValueError: Role must be 'user' or 'assistant'
         """
-        if role not in ["user", "assistant"]:
+        if role not in ["user", "assistant", "system"]:
             raise ValueError("Role must be 'user' or 'assistant'")
 
         data = {"role": role, "content": content}
