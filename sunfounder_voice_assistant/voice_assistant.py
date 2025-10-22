@@ -1,43 +1,61 @@
-from .llm import OpenAI as LLM
-from .stt import Vosk as STT
+from .llm import LLM
+from .stt import STT
 from .tts import Piper as TTS
-from .keyboard_input import KeyboardInput
+
+from ._keyboard_input import KeyboardInput
+
 from typing import Callable
 
 import time
-import threading
-import random
-import json
 
-# Robot name
 NAME = "Buddy"
+""" Default assistant name """
 
-# Enable image, need to set up a multimodal language model
 WITH_IMAGE = True
+""" Enable image, need to set up a multimodal language model """
 
-# Set models and languages
-LLM_MODEL = "gpt-4o-mini"
 TTS_MODEL = "en_US-ryan-low"
+""" Default TTS model """
+
 STT_LANGUAGE = "en-us"
+""" Default STT language """
 
-# Enable keyboard input
 KEYBOARD_ENABLE = True
+""" Enable keyboard input """
 
-# Enable wake word
 WAKE_ENABLE = True
+""" Enable wake word """
+
 WAKE_WORD = [f"hey {NAME.lower()}"]
-# Set wake word answer, set empty to disable
+""" Default wake word """
+
 ANSWER_ON_WAKE = "Hi there"
+""" Default answer on wake word, set empty to disable """
 
-# Welcome message
 WELCOME = f"Hi, I'm {NAME}. Wake me up with: " + ", ".join(WAKE_WORD)
+""" Default welcome message """
 
-# Set instructions
 INSTRUCTIONS = f"You are a helpful assistant, named {NAME}."
+""" Default set instructions """
+
 
 class VoiceAssistant:
-    """ Voice assistant class """
-    VOICE_ACTIONS = ["bark", "bark harder", "pant",  "howling"]
+    """ Voice assistant class
+
+    Args:
+        llm (:class:`sunfounder_voice_assistant.llm.LLM`): Language model
+        name (str, optional): Robot name, default is NAME
+        with_image (bool, optional): Enable image, need to set up a multimodal language model, default is WITH_IMAGE
+        tts_model (str, optional): Text-to-speech model, default is TTS_MODEL
+        stt_language (str, optional): Speech-to-text language, default is STT_LANGUAGE
+        keyboard_enable (bool, optional): Enable keyboard input, default is KEYBOARD_ENABLE
+        wake_enable (bool, optional): Enable wake word, default is WAKE_ENABLE
+        wake_word (list, optional): Wake word, default is WAKE_WORD
+        answer_on_wake (str, optional): Answer on wake word, default is ANSWER_ON_WAKE
+        welcome (str, optional): Welcome message, default is WELCOME
+        instructions (str, optional): Set instructions, default is INSTRUCTIONS
+        disable_think (bool, optional): Disable think, default is False
+    """
 
     def __init__(self,
             llm: LLM,
@@ -53,22 +71,6 @@ class VoiceAssistant:
             instructions: str = INSTRUCTIONS,
             disable_think: bool = False,
         ) -> None:
-        """ Initialize voice assistant
-
-        Args:
-            llm (LLM): Language model
-            name (str, optional): Robot name, default is NAME
-            with_image (bool, optional): Enable image, need to set up a multimodal language model, default is WITH_IMAGE
-            tts_model (str, optional): Text-to-speech model, default is TTS_MODEL
-            stt_language (str, optional): Speech-to-text language, default is STT_LANGUAGE
-            keyboard_enable (bool, optional): Enable keyboard input, default is KEYBOARD_ENABLE
-            wake_enable (bool, optional): Enable wake word, default is WAKE_ENABLE
-            wake_word (list, optional): Wake word, default is WAKE_WORD
-            answer_on_wake (str, optional): Answer on wake word, default is ANSWER_ON_WAKE
-            welcome (str, optional): Welcome message, default is WELCOME
-            instructions (str, optional): Set instructions, default is INSTRUCTIONS
-            disable_think (bool, optional): Disable think, default is False
-        """
         self.llm = llm
         self.name = name
         self.with_image = with_image

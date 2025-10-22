@@ -9,21 +9,21 @@ from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
 from tqdm import tqdm
 
 from .piper_models import PIPER_MODELS, MODELS, COUNTRYS
-from ..audio_player import AudioPlayer
-from .base import TTSBase
+from .._audio_player import AudioPlayer
+from .._base import _Base
 
 PIPER_MODEL_DIR = "/opt/piper_models"
 
-class Piper(TTSBase):
-    """ Piper TTS engine. """
+class Piper(_Base):
+    """ Piper TTS engine.
+    
+    Args:
+        model (str, optional): model, leave it None to use default model, defaults to None
+        *args: passed to :class:`sunfounder_voice_assistant._base._Base`.
+        **kwargs: passed to :class:`sunfounder_voice_assistant._base._Base`.
+    """
 
     def __init__(self, *args, model: str = None, **kwargs) -> None:
-        """ Initialize the Piper TTS engine.
-
-        Args:
-            model (str, optional): model, leave it None to use default model, defaults to None
-            log (logging.Logger, optional): logger, leave it None to use default logger, defaults to None
-        """
         super().__init__(*args, **kwargs)
         # Init model directory
         if not os.path.exists(PIPER_MODEL_DIR):

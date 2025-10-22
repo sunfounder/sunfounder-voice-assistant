@@ -1,4 +1,4 @@
-""" Piper models. """
+
 PIPER_MODELS = {
     "ar_JO": {
         "kareem": ["ar_JO-kareem-low", "ar_JO-kareem-medium"]
@@ -200,9 +200,14 @@ PIPER_MODELS = {
         "huayan": ["zh_CN-huayan-x_low", "zh_CN-huayan-medium"]
     }
 }
+""" Piper models. """
 
 COUNTRYS = list(PIPER_MODELS.keys())
+"""Supported countries."""
+
 MODELS = []
+"""Supported models."""
+
 for country in COUNTRYS:
     for model in PIPER_MODELS[country].keys():
         MODELS += PIPER_MODELS[country][model]

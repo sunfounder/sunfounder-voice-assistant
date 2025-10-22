@@ -2,7 +2,6 @@
 import requests
 import base64
 import json
-import re
 from enum import StrEnum
 
 class Authorization(StrEnum):
@@ -11,7 +10,16 @@ class Authorization(StrEnum):
     API_KEY = "Api-Key"
 
 class LLM():
-    """ LLM class """
+    """ LLM class
+    
+    Args:
+        api_key (str, optional): API key, default is None
+        model (str, optional): Model name, default is None
+        url (str, optional): URL, default is None
+        base_url (str, optional): Base URL, default is None
+        max_messages (int, optional): Max messages, default is DEFAULTMAX_MESSAGES
+        authorization (Authorization, optional): Authorization, default is Authorization.BEARER
+    """
     DEFAULTMAX_MESSAGES = 20
 
     def __init__(self, 
@@ -22,16 +30,6 @@ class LLM():
         max_messages=DEFAULTMAX_MESSAGES,
         authorization=Authorization.BEARER
     ):
-        """ Initialize LLM class
-
-        Args:
-            api_key (str, optional): API key, default is None
-            model (str, optional): Model name, default is None
-            url (str, optional): URL, default is None
-            base_url (str, optional): Base URL, default is None
-            max_messages (int, optional): Max messages, default is DEFAULTMAX_MESSAGES
-            authorization (Authorization, optional): Authorization, default is Authorization.BEARER
-        """
         self.max_messages = max_messages
         self.model = model
         self.url = url

@@ -1,38 +1,48 @@
 import requests
-from ..audio_player import AudioPlayer
-from .base import TTSBase
+from .._audio_player import AudioPlayer
+from .._base import _Base
 
 from typing import Optional
 from enum import StrEnum
 
-class Voice(StrEnum):
-    """ Voice enum. """
+class OpenAI_TTS(_Base):
+    """ OpenAI TTS engine.
+    
+    Args:
+        voice (Voice, optional): Voice, default is Voice.ALLOY.
+        model (Model, optional): Model, default is Model.GPT_4O_MINI_TTS.
+        api_key (str, optional): API key.
+        gain (float, optional): Volume gain, default is 1.5.
+        log (logging.Logger, optional): Logger, default is None.
+        *args: passed to :class:`sunfounder_voice_assistant._base._Base`.
+        **kwargs: passed to :class:`sunfounder_voice_assistant._base._Base`.
+    """
 
-    ALLOY = "alloy"
-    ASH = "ash"
-    BALLAD = "ballad"
-    CORAL = "coral"
-    ECHO = "echo"
-    FABLE = "fable"
-    NOVA = "nova"
-    ONYX = "onyx"
-    SAGE = "sage"
-    SHIMMER = "shimmer"
-
-class Model(StrEnum):
-    """ Model enum. """
-
-    GPT_4O_MINI_TTS = "gpt-4o-mini-tts"
-
-class OpenAI_TTS(TTSBase):
-    """ OpenAI TTS engine. """
-
-    DEFAULT_MODEL = Model.GPT_4O_MINI_TTS
-    DEFAULT_VOICE = Voice.ALLOY
     DEFAULT_INSTRUCTIONS = "Speak in a cheerful and positive tone."
 
     URL = "https://api.openai.com/v1/audio/speech"
     AUDIO_FORMAT = 'wav'
+    class Voice(StrEnum):
+        """ Voice enum. """
+
+        ALLOY = "alloy"
+        ASH = "ash"
+        BALLAD = "ballad"
+        CORAL = "coral"
+        ECHO = "echo"
+        FABLE = "fable"
+        NOVA = "nova"
+        ONYX = "onyx"
+        SAGE = "sage"
+        SHIMMER = "shimmer"
+
+    class Model(StrEnum):
+        """ Model enum. """
+
+        GPT_4O_MINI_TTS = "gpt-4o-mini-tts"
+
+    DEFAULT_MODEL = Model.GPT_4O_MINI_TTS
+    DEFAULT_VOICE = Voice.ALLOY
 
     def __init__(self, *args,
         voice: Voice=DEFAULT_VOICE,
@@ -40,15 +50,6 @@ class OpenAI_TTS(TTSBase):
         api_key: str=None,
         gain: float=1.5,
         **kwargs) -> None:
-        """ Initialize OpenAI TTS engine.
-
-        Args:
-            voice (Voice, optional): Voice, default is Voice.ALLOY.
-            model (Model, optional): Model, default is Model.GPT_4O_MINI_TTS.
-            api_key (str, optional): API key.
-            gain (float, optional): Volume gain, default is 1.5.
-            log (logging.Logger, optional): Logger, default is None.
-        """
         super().__init__(*args, **kwargs)
 
         self._model = model or self.DEFAULT_MODEL
@@ -125,24 +126,20 @@ class OpenAI_TTS(TTSBase):
             with AudioPlayer(gain=self._gain) as player:
                 player.play_file(file_name)
 
-    def set_voice(self, voice: str) -> None:
+    def set_voice(self, voice: Voice) -> None:
         """ Set voice.
 
         Args:
-            voice (str): Voice.
+            voice (Voice): Voice.
         """
-        if voice not in self.VOICES:
-            raise ValueError(f'Voice {voice} is not supported')
         self._voice = voice
 
-    def set_model(self, model: str) -> None:
+    def set_model(self, model: Model) -> None:
         """ Set model.
 
         Args:
-            model (str): Model.
+            model (Model): Model.
         """
-        if model not in self.MODLES:
-            raise ValueError(f'Model {model} is not supported')
         self._model = model
 
     def set_api_key(self, api_key: str) -> None:

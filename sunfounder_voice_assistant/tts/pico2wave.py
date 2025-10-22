@@ -1,9 +1,14 @@
-from ..utils import is_installed, run_command, check_executable
-from .base import TTSBase
+from .._utils import is_installed, run_command, check_executable
+from .._base import _Base
 
-class Pico2Wave(TTSBase):
-    """ Pico2Wave TTS engine. """
-    PICO2WAVE = 'pico2wave'
+class Pico2Wave(_Base):
+    """ Pico2Wave TTS engine.
+    
+    Args:
+        lang (str, optional): language, leave it None to use default language, defaults to 'en-US'
+        *args: passed to :class:`sunfounder_voice_assistant._base._Base`.
+        **kwargs: passed to :class:`sunfounder_voice_assistant._base._Base`.
+    """
 
     SUPPORTED_LANGUAUE = [
         'en-US',
@@ -13,12 +18,9 @@ class Pico2Wave(TTSBase):
         'fr-FR',
         'it-IT',
     ]
-    def __init__(self, *args, lang: str=None, **kwargs) -> None:
-        """ Initialize the pico2wave TTS engine.
+    """Supported languages."""
 
-        Args:
-            lang (str, optional): language, leave it None to use default language, defaults to 'en-US'
-        """
+    def __init__(self, *args, lang: str=None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         if not is_installed("pico2wave"):

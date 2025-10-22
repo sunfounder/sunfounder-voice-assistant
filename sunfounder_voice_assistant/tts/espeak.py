@@ -1,13 +1,17 @@
-from ..utils import is_installed, run_command, check_executable
-from .base import TTSBase
-from ..audio_player import AudioPlayer
+from .._utils import is_installed, run_command, check_executable
+from .._audio_player import AudioPlayer
+from .._base import _Base
 
-class Espeak(TTSBase):
-    """ Espeak TTS engine """
+class Espeak(_Base):
+    """ Espeak TTS engine
+    
+    Args:
+        *args: passed to :class:`sunfounder_voice_assistant._base._Base`.
+        **kwargs: passed to :class:`sunfounder_voice_assistant._base._Base`.
+    """
     ESPEAK = 'espeak'
 
     def __init__(self, *args, **kwargs) -> None:
-        """ Initialize espeak TTS engine """
         super().__init__(*args, **kwargs)
 
         if not is_installed("espeak"):

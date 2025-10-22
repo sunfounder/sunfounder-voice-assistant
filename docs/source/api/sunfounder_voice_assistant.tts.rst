@@ -13,7 +13,6 @@ Submodules
 .. toctree::
    :maxdepth: 1
 
-   sunfounder_voice_assistant.tts.base
    sunfounder_voice_assistant.tts.espeak
    sunfounder_voice_assistant.tts.openai_tts
    sunfounder_voice_assistant.tts.pico2wave

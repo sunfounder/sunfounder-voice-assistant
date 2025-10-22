@@ -1,7 +1,7 @@
-sunfounder\_voice\_assistant.keyboard\_input module
+sunfounder\_voice\_assistant.\_audio\_player module
 ===================================================
 
-.. automodule:: sunfounder_voice_assistant.keyboard_input
+.. automodule:: sunfounder_voice_assistant._audio_player
    :members:
    :undoc-members:
    :show-inheritance:

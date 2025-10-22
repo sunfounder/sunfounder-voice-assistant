@@ -8,7 +8,7 @@ import threading  # 用于终止控制
 from vosk import Model, KaldiRecognizer, SetLogLevel
 from tqdm import tqdm
 from zipfile import ZipFile
-from ..utils import ignore_stderr
+from .._utils import ignore_stderr
 
 import json
 from pathlib import Path

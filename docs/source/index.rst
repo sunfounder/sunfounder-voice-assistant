@@ -3,14 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to SunFounder Voice Assistant API Reference's documentation!
+SunFounder Voice Assistant
 ====================================================================
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
 
-   sunfounder_voice_assistant
+   api/sunfounder_voice_assistant
 
 
 Indices and tables

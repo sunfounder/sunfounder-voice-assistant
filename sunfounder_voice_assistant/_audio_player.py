@@ -8,7 +8,7 @@ import wave
 import threading
 import numpy as np
 from typing import Optional
-from .utils import redirect_error_2_null, cancel_redirect_error
+from ._utils import redirect_error_2_null, cancel_redirect_error
 
 # Check PyAudio availability
 _pyaudio_available = False
@@ -28,6 +28,18 @@ class AudioPlayer:
     - Asynchronous playback support
     - Audio file playback (WAV format)
     - Audio file gain adjustment
+    
+    Args:
+        sample_rate (int): Audio sample rate in Hz (default: 22050).
+        channels (int): Number of audio channels (1 for mono, 2 for stereo).
+        gain (float): Volume gain factor (1.0 = original volume).
+        format (int): PyAudio format constant (default: pyaudio.paInt16).
+        timeout (float): Timeout in seconds for playback operations.
+        enable_buffering (bool): Enable audio buffering to reduce noise artifacts.
+        buffer_size (int): Minimum buffer size for playback in bytes.
+    
+    Raises:
+        ImportError: If PyAudio is not available on the system.
     """
 
     def __init__(self,
@@ -38,20 +50,6 @@ class AudioPlayer:
         timeout: Optional[float] = None,
         enable_buffering: bool = True,
         buffer_size: int = 8192) -> None:
-        """Initializes the audio player with specified parameters.
-        
-        Args:
-            sample_rate (int): Audio sample rate in Hz (default: 22050).
-            channels (int): Number of audio channels (1 for mono, 2 for stereo).
-            gain (float): Volume gain factor (1.0 = original volume).
-            format (int): PyAudio format constant (default: pyaudio.paInt16).
-            timeout (float): Timeout in seconds for playback operations.
-            enable_buffering (bool): Enable audio buffering to reduce noise artifacts.
-            buffer_size (int): Minimum buffer size for playback in bytes.
-        
-        Raises:
-            ImportError: If PyAudio is not available on the system.
-        """
         if not _pyaudio_available:
             raise ImportError("PyAudio is required but not available. Please install it with 'pip install pyaudio'")
             

@@ -23,8 +23,10 @@ Submodules
 .. toctree::
    :maxdepth: 1
 
-   sunfounder_voice_assistant.audio_player
-   sunfounder_voice_assistant.keyboard_input
-   sunfounder_voice_assistant.utils
-   sunfounder_voice_assistant.version
+   sunfounder_voice_assistant._audio_player
+   sunfounder_voice_assistant._base
+   sunfounder_voice_assistant._keyboard_input
+   sunfounder_voice_assistant._logger
+   sunfounder_voice_assistant._utils
+   sunfounder_voice_assistant._version
    sunfounder_voice_assistant.voice_assistant

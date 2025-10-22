@@ -1,4 +1,4 @@
-from sunfounder_voice_assistant.stt import Vosk as STT
+from sunfounder_voice_assistant.stt import STT
 import time
 
 WAKE_WORDS = ["hey robot"]
