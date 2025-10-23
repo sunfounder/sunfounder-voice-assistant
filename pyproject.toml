@@ -22,7 +22,6 @@ dynamic = ["version"]
 dependencies = [
   'piper-tts',
   'vosk',
-  'sox',
   'pyaudio',
   'sounddevice'
 ]
