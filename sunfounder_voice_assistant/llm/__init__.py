@@ -77,6 +77,7 @@ __all__ = [
     "Deepseek",
     "Grok",
     "Doubao",
+    "Gemini",
     "Qwen",
     "OpenAI",
     "Ollama",
