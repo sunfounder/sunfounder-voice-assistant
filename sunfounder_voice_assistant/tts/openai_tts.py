@@ -134,12 +134,14 @@ class OpenAI_TTS(_Base):
         """
         self._voice = voice
 
-    def set_model(self, model: Model) -> None:
+    def set_model(self, model: [Model, str]) -> None:
         """ Set model.
 
         Args:
-            model (Model): Model.
+            model (Model | str): Model.
         """
+        if isinstance(model, str):
+            model = self.Model(model)
         self._model = model
 
     def set_api_key(self, api_key: str) -> None:

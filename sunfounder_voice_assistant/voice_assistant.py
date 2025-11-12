@@ -101,7 +101,7 @@ class VoiceAssistant:
             self.add_trigger(self.trigger_keyboard_input)
 
         if self.with_image:
-            self.init_image_sensor()
+            self.init_camera()
 
     def before_listen(self) -> None:
         """ Before listen """
@@ -190,6 +190,15 @@ class VoiceAssistant:
         """ On finish a round """ 
         pass
 
+    def capture_image(self, path: str) -> None:
+        """ Capture image
+
+        Args:
+            path (str): Path to save image
+        """
+        if self.with_image and self.picam2:
+            self.picam2.capture_file(path)
+
     def trigger_wake_word(self) -> tuple[bool, bool, str]:
         """ Trigger wake word
 
@@ -229,24 +238,18 @@ class VoiceAssistant:
             triggered = True
         return triggered, disable_image, message
 
-    def init_image_sensor(self) -> None:
-        """ Initialize image sensor """
-        from vilib import Vilib
-        import cv2
+    def init_camera(self) -> None:
+        """ Initialize camera """
+        from picamera2 import Picamera2
+        
+        self.picam2 = Picamera2()
+        self.picam2.configure(self.picam2.create_preview_configuration(main={"size": (640, 480)}))
+        self.picam2.start()
 
-        self.vilib = Vilib
-        self.cv2 = cv2
-
-        Vilib.camera_start(vflip=False,hflip=False)
-        Vilib.display(local=False,web=True)
-
-        while True:
-            if Vilib.flask_start:
-                break
-            time.sleep(0.01)
-
-        time.sleep(.5)
-        print('\n')
+    def close_camera(self) -> None:
+        """ Close camera """
+        if self.with_image and self.picam2:
+            self.picam2.close()
 
     def listen(self) -> str:
         """ Listen
@@ -287,7 +290,7 @@ class VoiceAssistant:
 
         if self.with_image and not disable_image:
             image_path = './img_input.jpg'
-            self.cv2.imwrite(image_path, self.vilib.img)
+            self.capture_image(image_path)
         else:
             image_path = None
         kwargs = {
@@ -379,5 +382,5 @@ class VoiceAssistant:
             if self.keyboard_enable:
                 self.keyboard_input.stop()
             if self.with_image:
-                self.vilib.camera_close()
+                self.close_camera()
             self.on_stop()
