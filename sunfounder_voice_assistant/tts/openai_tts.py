@@ -126,12 +126,17 @@ class OpenAI_TTS(_Base):
             with AudioPlayer(gain=self._gain) as player:
                 player.play_file(file_name)
 
-    def set_voice(self, voice: Voice) -> None:
+    def set_voice(self, voice: [Voice, str]) -> None:
         """ Set voice.
 
         Args:
-            voice (Voice): Voice.
+            voice (Voice | str): Voice.
         """
+        if isinstance(voice, str):
+            voice = self.Voice(voice)
+        elif not isinstance(voice, self.Voice):
+            raise ValueError(f"Invalid voice: {voice}, must be {self.Voice.__name__}")
+        
         self._voice = voice
 
     def set_model(self, model: [Model, str]) -> None:
@@ -142,6 +147,8 @@ class OpenAI_TTS(_Base):
         """
         if isinstance(model, str):
             model = self.Model(model)
+        elif not isinstance(model, self.Model):
+            raise ValueError(f"Invalid model: {model}, must be {self.Model.__name__}")
         self._model = model
 
     def set_api_key(self, api_key: str) -> None:
@@ -150,12 +157,16 @@ class OpenAI_TTS(_Base):
         Args:
             api_key (str): API key.
         """
+        if not isinstance(api_key, str):
+            raise ValueError(f"Invalid api_key: {api_key}, must be str")
         self._api_key = api_key
 
-    def set_gain(self, gain: int) -> None:
+    def set_gain(self, gain: float) -> None:
         """ Set gain.
 
         Args:
-            gain (int): Gain.
+            gain (float): Gain.
         """
+        if not isinstance(gain, float):
+            raise ValueError(f"Invalid gain: {gain}, must be float")
         self._gain = gain
