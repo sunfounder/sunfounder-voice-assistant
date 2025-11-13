@@ -41,7 +41,7 @@ class Pico2Wave(_Base):
         cmd = f'pico2wave -l {self._lang} -w /tmp/pico2wave.wav "{words}" && aplay /tmp/pico2wave.wav 2>/dev/null & '
         _, result = run_command(cmd)
         if len(result) != 0:
-            raise (f'tts-pico2wave:\n\t{result}')
+            raise Exception(f'tts-pico2wave:\n\t{result}')
         self.log.debug(f'command: {cmd}')
 
     def set_lang(self, lang: str) -> None:

@@ -475,15 +475,12 @@ class Vosk():
                     # 如果是用户终止，直接跳出重试循环
                     if "cancelled by user" in str(e).lower():
                         self.log.info(f"Download cancelled: {str(e)}")
-                        raise
                     
                     retries += 1
                     self.log.error(f"Download attempt {retries}/{max_retries} failed: {str(e)}")
                     
-                    # If max retries reached, raise exception
                     if retries >= max_retries:
                         self.log.error(f"Reached maximum retry count ({max_retries}), download failed")
-                        raise
                     
                     # Wait before retrying (exponential backoff)
                     wait_time = 2** retries
@@ -495,7 +492,6 @@ class Vosk():
             # 终止后保留部分下载文件（以便后续续传），如果需要删除可改为os.remove(zip_path)
             if os.path.exists(zip_path):
                 self.log.info(f"Partial download saved to {zip_path}")
-            raise
         finally:
             self.downloading = False
             self.stop_downloading_event.clear()  # 重置终止事件
