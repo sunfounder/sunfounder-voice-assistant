@@ -289,7 +289,7 @@ class VoiceAssistant:
         self.before_think(text)
 
         if self.with_image and not disable_image:
-            image_path = './img_input.jpg'
+            image_path = './img_input.jpeg'
             self.capture_image(image_path)
         else:
             image_path = None
