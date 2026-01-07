@@ -103,16 +103,6 @@ class LLM():
             ]
 
         self.messages.append({"role": role, "content": content})
-
-    def _add_message(self, role, content, image_path=None):
-        """ Add message
-
-        Args:
-            role (str): Role
-            content (str): Content
-            image_path (str, optional): Image path, default is None
-        """
-        self.add_message(role, content, image_path)
         if len(self.messages) > self.max_messages:
             self.messages.pop(0)
 
@@ -148,7 +138,7 @@ class LLM():
         Args:
             instructions (str): Instructions
         """
-        self._add_message("system", instructions)
+        self.add_message("system", instructions)
 
     def set_welcome(self, welcome):
         """ Set welcome
@@ -156,7 +146,7 @@ class LLM():
         Args:
             welcome (str): Welcome
         """
-        self._add_message("assistant", welcome)
+        self.add_message("assistant", welcome)
 
     def chat(self, stream=False, **kwargs):
         """ Chat with LLM
@@ -197,6 +187,7 @@ class LLM():
         # print(f"Chat with headers: {headers}")
         # print(f"Chat with data: {data}")
         response = requests.post(self.url, headers=headers, data=json.dumps(data), stream=stream)
+        # print(f"Chat with response: {response.text}")
         return response
 
     def prompt(self, msg, image_path=None, stream=False, **kwargs):
@@ -227,7 +218,7 @@ class LLM():
             raise ValueError("URL not set")
         
         if isinstance(msg, str):
-            self._add_message("user", msg, image_path)
+            self.add_message("user", msg, image_path)
         elif isinstance(msg, list):
             self.messages = msg
         else:
@@ -291,7 +282,7 @@ class LLM():
                 yield next_word
         if len(full_content) > 0:
             full_content = ''.join(full_content)
-            self._add_message("assistant", full_content)
+            self.add_message("assistant", full_content)
         else:
             try:
                 data = json.loads(content)
