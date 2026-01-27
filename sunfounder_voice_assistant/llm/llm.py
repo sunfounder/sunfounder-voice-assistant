@@ -3,6 +3,7 @@ import requests
 import base64
 import json
 from enum import StrEnum
+from .._logger import Logger
 
 class Authorization(StrEnum):
     """ Authorization class """
@@ -28,7 +29,8 @@ class LLM():
         url=None,
         base_url=None,
         max_messages=DEFAULTMAX_MESSAGES,
-        authorization=Authorization.BEARER
+        authorization=Authorization.BEARER,
+        debug=False,
     ):
         self.max_messages = max_messages
         self.model = model
@@ -36,12 +38,22 @@ class LLM():
         self.base_url = base_url
         self.api_key = api_key
         self.authorization = authorization
+        self.debug_enabled = debug
 
         self.params = {}
         self.messages = []
 
         if self.url is None and self.base_url is not None:
             self.url = self.base_url + "/chat/completions"
+
+    def debug(self, msg, end="\n", flush=True):
+        """ Debug message
+
+        Args:
+            msg (str): Message
+        """
+        if self.debug_enabled:
+            print(f"Debug: {msg}", end=end, flush=flush)
 
     def set_api_key(self, api_key):
         """ Set API key
@@ -183,11 +195,11 @@ class LLM():
         for name, value in self.params.items():
             data[name] = value
         
-        # print(f"Chat with URL: {self.url}")
-        # print(f"Chat with headers: {headers}")
-        # print(f"Chat with data: {data}")
+        self.debug(f"Chat with URL: {self.url}")
+        self.debug(f"Chat with headers: {headers}")
+        self.debug(f"Chat with data: {data}")
         response = requests.post(self.url, headers=headers, data=json.dumps(data), stream=stream)
-        # print(f"Chat with response: {response.text}")
+        self.debug(f"Chat with response: {response.text}")
         return response
 
     def prompt(self, msg, image_path=None, stream=False, **kwargs):
