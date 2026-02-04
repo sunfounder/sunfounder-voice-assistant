@@ -1,5 +1,5 @@
 from sunfounder_voice_assistant.voice_assistant import VoiceAssistant
-from pidog.llm import OpenAI as LLM
+from sunfounder_voice_assistant.llm import OpenAI as LLM
 from secret import OPENAI_API_KEY as API_KEY
 
 llm = LLM(
