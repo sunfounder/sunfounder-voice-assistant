@@ -57,7 +57,8 @@ class OpenAI_TTS(_Base):
         self._gain = gain
         self.is_ready = False
 
-        self.set_api_key(api_key)
+        if api_key:
+            self.set_api_key(api_key)
 
     def tts(self, words: str, output_file: str=f"/tmp/openai_tts.{AUDIO_FORMAT}", instructions: Optional[str]=None, stream: bool=False) -> bool:
         """ Request OpenAI TTS API.
