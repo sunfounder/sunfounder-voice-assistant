@@ -20,8 +20,8 @@ import random
 import json
 
 # Configuration
-WAKE_WORDS = ["Nova"]
-LANGUAGE = 'en'
+WAKE_WORDS = ["Nova", "Hey Nova", "Hi Nova"]
+LANGUAGE = 'en-us'
 WORKSPACE = Path.home() / '.openclaw' / 'workspace'
 MEMORY_FILE = WORKSPACE / 'memory' / 'voice_chat.md'
 REPLAY_WAKES = ["I'm here", "Yes", "What can I do for you", "Please go ahead", "Hello", "How can I help"]
