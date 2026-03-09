@@ -20,7 +20,7 @@ import random
 import json
 
 # Configuration
-WAKE_WORDS = ["nova", "hey nova", "hi nova"]
+WAKE_WORDS = ["amy", "hello amy", "hi amy", "hey amy"]
 LANGUAGE = 'en-us'
 WORKSPACE = Path.home() / '.openclaw' / 'workspace'
 MEMORY_FILE = WORKSPACE / 'memory' / 'voice_chat.md'
