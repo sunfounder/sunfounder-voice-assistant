@@ -8,7 +8,7 @@ Integrates with OpenClaw for LLM responses and TTS.
 Usage:
     python3 voice_chat.py
 
-Wake words: "旺财"
+Wake words: "Nova"
 """
 
 import time
@@ -20,11 +20,11 @@ import random
 import json
 
 # Configuration
-WAKE_WORDS = ["旺财"]
-LANGUAGE = 'cn'
+WAKE_WORDS = ["Nova"]
+LANGUAGE = 'en'
 WORKSPACE = Path.home() / '.openclaw' / 'workspace'
 MEMORY_FILE = WORKSPACE / 'memory' / 'voice_chat.md'
-REPLAY_WAKES = ["在呢", "我在", "有什么事", "请说", "你好", "你好啊", "我在呢"]
+REPLAY_WAKES = ["I'm here", "Yes", "What can I do for you", "Please go ahead", "Hello", "How can I help"]
 
 class VoiceChat:
     def __init__(self):
@@ -34,8 +34,8 @@ class VoiceChat:
         print(f"📢 Wake words: {WAKE_WORDS}")
         print(f"✅ STT Ready - Model: {self.stt.get_model_name(LANGUAGE)}")
         self.tts = Piper()
-        self.tts.set_model('zh_CN-huayan-x_low')
-        print(f"✅ TTS Ready - Using Piper, model: zh_CN-huayan-x_low")
+        self.tts.set_model('en_US-amy-medium')
+        print(f"✅ TTS Ready - Using Piper, model: en_US-amy-medium")
 
     def get_llm_response(self, text):
         """Send text to OpenClaw and get LLM response"""
@@ -50,26 +50,26 @@ class VoiceChat:
                 '--log-level', 'silent',
                 '--timeout', '30'
             ]
-            
+
             print(f"Running command: {' '.join(cmd)}")
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=35)
             if result.returncode == 0:
-                # 过滤掉warning行
+                # Filter out warning lines
                 lines = result.stdout.splitlines()
-                filtered_lines = [line for line in lines if not "Config warnings" in line]
+                filtered_lines = [line for line in lines if "Config warnings" not in line]
                 result.stdout = "\n".join(filtered_lines)
-                # 解析 JSON 响应
+                # Parse JSON response
                 response = json.loads(result.stdout)
-                # 提取实际消息内容
+                # Extract actual message content
                 if isinstance(response, dict):
                     return response["result"]["payloads"][0]["text"]
                 return str(response)
             else:
                 print(f" ❌ Agent error: {result.stderr.strip()}")
-                return f"抱歉，出错了：{result.stderr.strip()[:100]}"
+                return f"Sorry, an error occurred: {result.stderr.strip()[:100]}"
 
         except Exception as e:
-            return f"抱歉，连接失败了：{e}"
+            return f"Sorry, connection failed: {e}"
 
     def log_interaction(self, user_text, bot_response):
         """Log voice interactions to memory file"""
@@ -78,8 +78,8 @@ class VoiceChat:
             timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
             with open(MEMORY_FILE, 'a', encoding='utf-8') as f:
                 f.write(f"\n## {timestamp}\n")
-                f.write(f"**你说**: {user_text}\n")
-                f.write(f"**我说**: {bot_response}\n")
+                f.write(f"**You said**: {user_text}\n")
+                f.write(f"**I said**: {bot_response}\n")
         except Exception as e:
             print(f"⚠️  Could not log: {e}")
 
@@ -95,7 +95,7 @@ class VoiceChat:
         while True:
             # Start listening for wake words
             self.stt.start_listening_wake_words()
-            
+
             # Wait for wake word
             print("⏳ Waiting for wake word...", end=' ', flush=True)
             while not self.stt.is_waked():
@@ -114,10 +114,10 @@ class VoiceChat:
                     print(f"\n🗣️  You said: {user_text}")
 
                     # Check for exit command
-                    if user_text in ['退出', '再见', '拜拜', 'stop', 'exit', 'quit']:
-                        print("👋 Goodbye!")
-                        self.tts.say("再见，有需要再叫我")
-                        break
+                    # if user_text.lower() in ['stop', 'exit', 'quit', 'goodbye', 'bye']:
+                    #     print("👋 Goodbye!")
+                    #     self.tts.say("Goodbye! Call me if you need me again")
+                    #     break
 
                     # Get LLM response
                     print("🤔 Thinking...", end=' ', flush=True)
@@ -134,13 +134,6 @@ class VoiceChat:
 
                 # Reset wake state
                 time.sleep(0.5)
-
-        # except KeyboardInterrupt:
-        #     print("\n\n🛑 Stopping Voice Chat...")
-        # finally:
-        #     self.stt.stop_listening()
-        #     self.stt.close()
-        #     print("✅ Voice Chat stopped")
 
 
 if __name__ == '__main__':
