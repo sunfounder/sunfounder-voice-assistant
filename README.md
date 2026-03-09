@@ -18,6 +18,12 @@ SunFounder Voice Assistant is a voice assistant, with tts stt and llm. help you 
 
 ## Installation
 
+Install dependencies
+
+```bash
+sudo apt install portaudio19-dev
+```
+
 Install SunFounder Voice Assistant
 
 ```bash
