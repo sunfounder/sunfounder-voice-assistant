@@ -21,7 +21,8 @@ import json
 
 # Configuration
 WAKE_WORDS = ["amy", "hello amy", "hi amy", "hey amy"]
-LANGUAGE = 'en-us'
+STT_LANGUAGE = 'en-us'
+TTS_MODEL = 'en_US-amy-medium'
 WORKSPACE = Path.home() / '.openclaw' / 'workspace'
 MEMORY_FILE = WORKSPACE / 'memory' / 'voice_chat.md'
 REPLAY_WAKES = ["I'm here", "Yes", "What can I do for you", "Please go ahead", "Hello", "How can I help"]
@@ -29,13 +30,13 @@ REPLAY_WAKES = ["I'm here", "Yes", "What can I do for you", "Please go ahead", "
 class VoiceChat:
     def __init__(self):
         print("🎙️  Initializing Voice Chat...")
-        self.stt = STT(language=LANGUAGE)
+        self.stt = STT(language=STT_LANGUAGE)
         self.stt.set_wake_words(WAKE_WORDS)
         print(f"📢 Wake words: {WAKE_WORDS}")
-        print(f"✅ STT Ready - Model: {self.stt.get_model_name(LANGUAGE)}")
+        print(f"✅ STT Ready - Model: {self.stt.get_model_name(STT_LANGUAGE)}")
         self.tts = Piper()
-        self.tts.set_model('en_US-amy-medium')
-        print(f"✅ TTS Ready - Using Piper, model: en_US-amy-medium")
+        self.tts.set_model(TTS_MODEL)
+        print(f"✅ TTS Ready - Using Piper, model: {TTS_MODEL}")
 
     def get_llm_response(self, text):
         """Send text to OpenClaw and get LLM response"""
