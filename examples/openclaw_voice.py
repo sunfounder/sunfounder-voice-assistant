@@ -8,7 +8,7 @@ Integrates with OpenClaw for LLM responses and TTS.
 Usage:
     python3 voice_chat.py
 
-Wake words: "Nova"
+Wake words: "Amy"
 """
 
 import time
