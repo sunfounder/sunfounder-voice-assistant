@@ -9,6 +9,7 @@ from vosk import Model, KaldiRecognizer, SetLogLevel
 from tqdm import tqdm
 from zipfile import ZipFile
 from .._utils import ignore_stderr
+from .vosk_models import DEFAULT_MODELS
 
 import json
 from pathlib import Path
@@ -18,6 +19,7 @@ import os
 MODEL_PRE_URL = "https://alphacephei.com/vosk/models/"
 MODEL_LIST_URL = MODEL_PRE_URL + "model-list.json"
 MODEL_BASE_PATH = "/opt/vosk_models"
+MODEL_LIST_CACHE_PATH = Path(MODEL_BASE_PATH, "model-list.json")
 
 class Vosk():
     """ Vosk STT class """
@@ -78,10 +80,51 @@ class Vosk():
         self.recognizer = KaldiRecognizer(model, self._samplerate)
 
     def update_model_list(self):
-        """ Update available models """
-        response = requests.get(MODEL_LIST_URL, timeout=10)
-        self.available_models = [model for model in response.json() if
-                model["type"] == "small" and model["obsolete"] == "false"]
+        """ Update available models
+        
+        Try to fetch model list from network. If network is unavailable,
+        load from cache. If no cache exists, use default model list.
+        Successfully fetched model list will be saved to cache for next use.
+        """
+        models = None
+        
+        # Try to fetch from network
+        try:
+            response = requests.get(MODEL_LIST_URL, timeout=10)
+            response.raise_for_status()
+            all_models = response.json()
+            models = [model for model in all_models if
+                    model["type"] == "small" and model["obsolete"] == "false"]
+            self.log.info(f"Successfully fetched model list from network: {len(models)} models")
+            
+            # Save to cache
+            try:
+                with open(MODEL_LIST_CACHE_PATH, "w", encoding="utf-8") as f:
+                    json.dump(all_models, f, ensure_ascii=False, indent=2)
+                self.log.debug(f"Model list cached to {MODEL_LIST_CACHE_PATH}")
+            except Exception as e:
+                self.log.warning(f"Failed to cache model list: {e}")
+                
+        except Exception as e:
+            self.log.warning(f"Failed to fetch model list from network: {e}")
+            
+            # Try to load from cache
+            if MODEL_LIST_CACHE_PATH.exists():
+                try:
+                    with open(MODEL_LIST_CACHE_PATH, "r", encoding="utf-8") as f:
+                        all_models = json.load(f)
+                    models = [model for model in all_models if
+                            model["type"] == "small" and model["obsolete"] == "false"]
+                    self.log.info(f"Loaded model list from cache: {len(models)} models")
+                except Exception as e:
+                    self.log.warning(f"Failed to load model list from cache: {e}")
+            
+            # Use default models if no models available
+            if models is None:
+                models = DEFAULT_MODELS.copy()
+                self.log.info(f"Using default model list: {len(models)} models")
+        
+        self.available_models = models
         self.available_languages = [model["lang"] for model in self.available_models]
         self.available_model_names = [model["name"] for model in self.available_models]
 
