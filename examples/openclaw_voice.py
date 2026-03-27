@@ -61,8 +61,7 @@ class VoiceChat:
                 '--channel', 'last',
                 '--message', voice_prompt + text,
                 '--json',
-                '--log-level', 'silent',
-                '--timeout', '60'
+                '--timeout', '120'
             ]
 
             print(f"Running command: {' '.join(cmd)}")
@@ -127,6 +126,7 @@ class VoiceChat:
                     else:
                         print(f"\r\x1b[Kpartial: {result['partial']}", end="", flush=True)
 
+                result = result["final"]
                 if result:
                     user_text = result.strip()
                     print(f"\n🗣️  You said: {user_text}")
