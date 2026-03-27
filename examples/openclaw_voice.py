@@ -26,6 +26,7 @@ TTS_MODEL = 'en_US-amy-medium'
 WORKSPACE = Path.home() / '.openclaw' / 'workspace'
 MEMORY_FILE = WORKSPACE / 'memory' / 'voice_chat.md'
 REPLAY_WAKES = ["I'm here", "Yes", "What can I do for you", "Please go ahead", "Hello", "How can I help"]
+TIMEOUT = 120
 
 class VoiceChat:
     def __init__(self):
@@ -61,11 +62,11 @@ class VoiceChat:
                 '--channel', 'last',
                 '--message', voice_prompt + text,
                 '--json',
-                '--timeout', '120'
+                '--timeout', str(TIMEOUT)
             ]
 
             print(f"Running command: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=35)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=TIMEOUT+10)
             if result.returncode == 0:
                 # Filter out warning lines
                 lines = result.stdout.splitlines()
