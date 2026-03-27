@@ -41,15 +41,28 @@ class VoiceChat:
     def get_llm_response(self, text):
         """Send text to OpenClaw and get LLM response"""
         try:
+            # Add system prompt for voice-friendly responses
+            voice_prompt = (
+                "This is a voice conversation. Please respond in a way that is easy to read aloud by TTS:\n"
+                "- Keep responses concise and conversational\n"
+                "- Do NOT use Markdown formatting (no **, ##, -, `, etc.)\n"
+                "- Do NOT use emojis or special symbols\n"
+                "- Do NOT use code blocks or technical formatting\n"
+                "- Speak naturally as if talking to someone\n"
+                "- Avoid lists, bullet points, or numbered items\n"
+                "\n"
+                "User's message: "
+            )
+            
             cmd = [
                 'openclaw',
                 'agent',
                 '--agent', 'main',
                 '--channel', 'last',
-                '--message', text,
+                '--message', voice_prompt + text,
                 '--json',
                 '--log-level', 'silent',
-                '--timeout', '30'
+                '--timeout', '60'
             ]
 
             print(f"Running command: {' '.join(cmd)}")
@@ -63,14 +76,14 @@ class VoiceChat:
                 response = json.loads(result.stdout)
                 # Extract actual message content
                 if isinstance(response, dict):
-                    return response["result"]["payloads"][0]["text"]
-                return str(response)
+                    return True, response["result"]["payloads"][0]["text"]
+                return True, str(response)
             else:
                 print(f" ❌ Agent error: {result.stderr.strip()}")
-                return f"Sorry, an error occurred: {result.stderr.strip()[:100]}"
+                return False, f"Sorry, an error occurred: {result.stderr.strip()[:100]}"
 
         except Exception as e:
-            return f"Sorry, connection failed: {e}"
+            return False, f"Sorry, connection failed: {e}"
 
     def log_interaction(self, user_text, bot_response):
         """Log voice interactions to memory file"""
@@ -107,8 +120,12 @@ class VoiceChat:
                 self.tts.say(random.choice(REPLAY_WAKES))
 
                 # Listen for user's speech
-                print("👂 Listening...", end=' ', flush=True)
-                result = self.stt.listen(stream=False)
+                print("👂 Listening...", flush=True)
+                for result in self.stt.listen(stream=True):
+                    if result["done"]:
+                        print(f"\r\x1b[Kfinal: {result['final']}")
+                    else:
+                        print(f"\r\x1b[Kpartial: {result['partial']}", end="", flush=True)
 
                 if result:
                     user_text = result.strip()
@@ -122,13 +139,13 @@ class VoiceChat:
 
                     # Get LLM response
                     print("🤔 Thinking...", end=' ', flush=True)
-                    bot_response = self.get_llm_response(user_text)
-                    print(f"\n💬 Response: {bot_response}")
+                    success, bot_response = self.get_llm_response(user_text)
+                    if success:
+                        print(f"\n💬 Response: {bot_response}")
+                        self.tts.say(bot_response)
+                    else:
+                        self.tts.say("Sorry, error occurred.")
 
-                    # Speak the response
-                    self.tts.say(bot_response)
-
-                    # Log the interaction
                     self.log_interaction(user_text, bot_response)
                 else:
                     print("❌ No speech detected")
