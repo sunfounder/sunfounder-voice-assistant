@@ -167,7 +167,7 @@ class Piper(_Base):
         if stream:
             self.stream(text)
         else:
-            file = "~/tmp/tts_piper.wav"
+            file = "~/.tmp/tts_piper.wav"
             self.tts(text, file)
             with AudioPlayer() as player:
                 player.play_file(file)

@@ -38,7 +38,7 @@ while True:
     input_text = input(">>> ")
 
     # Capture image
-    img_path = '~/tmp/llm-img.jpg'
+    img_path = '~/.tmp/llm-img.jpg'
     camera.capture_file(img_path)
 
     # Response without stream

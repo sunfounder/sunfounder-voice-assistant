@@ -1,11 +1,12 @@
 from ._version import __version__
 
 def ensure_tmp_dir():
-    """ Ensure tmp dir exists. """
-    from os import path, mkdir
+    """Ensure tmp dir exists."""
+    from pathlib import Path
 
-    if not path.exists('~/tmp/'):
-        import os
-        mkdir('~/tmp/')
+    tmp_dir = Path("~/.tmp").expanduser()
+
+    if not tmp_dir.exists():
+        tmp_dir.mkdir(parents=True)
 
 ensure_tmp_dir()

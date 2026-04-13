@@ -33,7 +33,7 @@ pip install --break git+https://github.com/sunfounder/sunfounder-voice-assistant
 # Or clone the repository and install from local
 git clone https://github.com/sunfounder/sunfounder-voice-assistant.git
 cd sunfounder-voice-assistant
-pip install sunfounder-voice-assistant
+pip install sunfounder-voice-assistant --break
 ```
 ## Create docs
 

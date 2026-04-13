@@ -38,7 +38,7 @@ class Pico2Wave(_Base):
         if not check_executable('pico2wave'):
             self.log.debug('pico2wave is busy. Pass')
 
-        cmd = f'pico2wave -l {self._lang} -w ~/tmp/pico2wave.wav "{words}" && aplay ~/tmp/pico2wave.wav 2>/dev/null & '
+        cmd = f'pico2wave -l {self._lang} -w ~/.tmp/pico2wave.wav "{words}" && aplay ~/.tmp/pico2wave.wav 2>/dev/null & '
         _, result = run_command(cmd)
         if len(result) != 0:
             raise Exception(f'tts-pico2wave:\n\t{result}')
