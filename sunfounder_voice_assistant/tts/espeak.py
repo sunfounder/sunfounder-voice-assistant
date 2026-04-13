@@ -45,7 +45,7 @@ class Espeak(_Base):
         Args:
             words (str): Words to say
         """
-        file = '~/.tmp/espeak.wav'
+        file = './espeak.wav'
         self.tts(words, file)
         with AudioPlayer() as player:
             player.play_file(file)

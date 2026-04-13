@@ -60,12 +60,12 @@ class OpenAI_TTS(_Base):
         if api_key:
             self.set_api_key(api_key)
 
-    def tts(self, words: str, output_file: str=f"~/.tmp/openai_tts.{AUDIO_FORMAT}", instructions: Optional[str]=None, stream: bool=False) -> bool:
+    def tts(self, words: str, output_file: str=f"./openai_tts.{AUDIO_FORMAT}", instructions: Optional[str]=None, stream: bool=False) -> bool:
         """ Request OpenAI TTS API.
 
         Args:
             words (str): Words to say.
-            output_file (str, optional): Output file, default is '~/.tmp/openai_tts.wav'.
+            output_file (str, optional): Output file, default is './openai_tts.wav'.
             instructions (str, optional): Instructions, default is None.
             stream (bool, optional): Whether to stream the audio, default is False.
 
@@ -122,7 +122,7 @@ class OpenAI_TTS(_Base):
         if stream:
             self.tts(words, instructions=instructions, stream=True)
         else:
-            file_name = f"~/.tmp/openai_tts.{self.AUDIO_FORMAT}"
+            file_name = f"./openai_tts.{self.AUDIO_FORMAT}"
             self.tts(words, instructions=instructions, output_file=file_name, stream=False)
             with AudioPlayer(gain=self._gain) as player:
                 player.play_file(file_name)
