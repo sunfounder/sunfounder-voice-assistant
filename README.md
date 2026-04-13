@@ -21,13 +21,19 @@ SunFounder Voice Assistant is a voice assistant, with tts stt and llm. help you 
 Install dependencies
 
 ```bash
-sudo apt install portaudio19-dev
+sudo apt install espeak libttspico-utils sox portaudio19-dev
 ```
 
 Install SunFounder Voice Assistant
 
 ```bash
-sudo pip install --break git+https://github.com/sunfounder/sunfounder-voice-assistant.git
+# Direct install from GitHub
+pip install --break git+https://github.com/sunfounder/sunfounder-voice-assistant.git
+
+# Or clone the repository and install from local
+git clone https://github.com/sunfounder/sunfounder-voice-assistant.git
+cd sunfounder-voice-assistant
+pip install sunfounder-voice-assistant
 ```
 ## Create docs
 
