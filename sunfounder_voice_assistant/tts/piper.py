@@ -169,7 +169,8 @@ class Piper(_Base):
         else:
             file = "./tts_piper.wav"
             self.tts(text, file)
-            with AudioPlayer() as player:
+            # Use the correct sample rate from Piper config
+            with AudioPlayer(self.piper.config.sample_rate) as player:
                 player.play_file(file)
 
     def available_models(self, country: str = None) -> List[str]:

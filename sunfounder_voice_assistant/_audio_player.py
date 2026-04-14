@@ -120,7 +120,7 @@ class AudioPlayer:
                 self.old_stderr = None
 
     def _find_working_device(self, channels: int, sample_rate: int, audio_format: int) -> int:
-        """Find a working output device by testing each one.
+        """Find a working output device.
 
         Args:
             channels: Number of audio channels
@@ -130,44 +130,7 @@ class AudioPlayer:
         Returns:
             int: Index of a working output device, or None for default device
         """
-        # Try devices in order: sysdefault -> hdmi -> default
-        # These are more likely to work with ALSA plughw
-        preferred_names = ['sysdefault', 'hdmi', 'default']
-
-        for name in preferred_names:
-            for i in range(self._pyaudio.get_device_count()):
-                try:
-                    info = self._pyaudio.get_device_info_by_index(i)
-                    if name in info['name'].lower() and info['maxOutputChannels'] > 0:
-                        test_stream = self._pyaudio.open(
-                            format=audio_format,
-                            channels=channels,
-                            rate=sample_rate,
-                            output=True,
-                            output_device_index=i
-                        )
-                        test_stream.close()
-                        return i
-                except Exception:
-                    continue
-
-        # Try each device as fallback
-        for i in range(self._pyaudio.get_device_count()):
-            try:
-                info = self._pyaudio.get_device_info_by_index(i)
-                if info['maxOutputChannels'] > 0:
-                    test_stream = self._pyaudio.open(
-                        format=audio_format,
-                        channels=channels,
-                        rate=sample_rate,
-                        output=True,
-                        output_device_index=i
-                    )
-                    test_stream.close()
-                    return i
-            except Exception:
-                continue
-
+        # Use default device (None) - let ALSA handle device selection
         return None
 
     def _open_stream(self):
@@ -400,7 +363,6 @@ class AudioPlayer:
                 # Only reuse if parameters match exactly
                 temp_stream = None
                 if self._stream is not None and not self._stream.is_stopped():
-                    # Check if existing stream has compatible parameters
                     try:
                         if (self._stream._format == audio_format and
                             self._stream._channels == channels and
@@ -412,13 +374,20 @@ class AudioPlayer:
                 # If we couldn't reuse, create a new stream
                 if temp_stream is None:
                     output_device_index = self._find_working_device(channels, sample_rate, audio_format)
-                    temp_stream = self._pyaudio.open(
-                        format=audio_format,
-                        channels=channels,
-                        rate=sample_rate,
-                        output=True,
-                        output_device_index=output_device_index
-                    )
+                    try:
+                        temp_stream = self._pyaudio.open(
+                            format=audio_format,
+                            channels=channels,
+                            rate=sample_rate,
+                            output=True,
+                            output_device_index=output_device_index
+                        )
+                    except OSError:
+                        # If creating new stream fails, try to reuse existing one (even if params differ)
+                        if self._stream is not None and not self._stream.is_stopped():
+                            temp_stream = self._stream
+                        else:
+                            raise
 
                 try:
                     # Use buffer to reduce playback interruptions
