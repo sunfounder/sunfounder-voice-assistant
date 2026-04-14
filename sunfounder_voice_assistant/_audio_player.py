@@ -61,7 +61,12 @@ class AudioPlayer:
         self._timeout = timeout
 
         # PyAudio instance and stream management
-        self._pyaudio = pyaudio.PyAudio()
+        # Redirect stderr during PyAudio init to suppress ALSA warnings
+        old_stderr = redirect_error_2_null()
+        try:
+            self._pyaudio = pyaudio.PyAudio()
+        finally:
+            cancel_redirect_error(old_stderr)
         self._stream = None
         self._playback_thread = None
         self._stop_event = threading.Event()
@@ -139,16 +144,20 @@ class AudioPlayer:
         Creates a new PyAudio output stream with the configured parameters.
         """
         if self._stream is None or self._stream.is_stopped():
-            output_device_index = self._find_working_device(
-                self.channels, self.sample_rate, self.format
-            )
-            self._stream = self._pyaudio.open(
-                format=self.format,
-                channels=self.channels,
-                rate=self.sample_rate,
-                output=True,
-                output_device_index=output_device_index
-            )
+            old_stderr = redirect_error_2_null()
+            try:
+                output_device_index = self._find_working_device(
+                    self.channels, self.sample_rate, self.format
+                )
+                self._stream = self._pyaudio.open(
+                    format=self.format,
+                    channels=self.channels,
+                    rate=self.sample_rate,
+                    output=True,
+                    output_device_index=output_device_index
+                )
+            finally:
+                cancel_redirect_error(old_stderr)
 
     def set_gain(self, gain: float) -> None:
         """Sets the playback gain factor.
