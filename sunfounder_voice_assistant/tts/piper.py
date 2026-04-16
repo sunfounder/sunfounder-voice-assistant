@@ -12,7 +12,8 @@ from .piper_models import PIPER_MODELS, MODELS, COUNTRYS
 from .._audio_player import AudioPlayer
 from .._base import _Base
 
-PIPER_MODEL_DIR = "/opt/piper_models"
+HOME = os.path.expanduser("~")
+PIPER_MODEL_DIR = f"{HOME}/.piper_models"
 
 class Piper(_Base):
     """ Piper TTS engine.

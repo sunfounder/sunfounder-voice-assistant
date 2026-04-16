@@ -15,10 +15,10 @@ import json
 from pathlib import Path
 import os
 
-
+HOME = os.path.expanduser("~")
 MODEL_PRE_URL = "https://alphacephei.com/vosk/models/"
 MODEL_LIST_URL = MODEL_PRE_URL + "model-list.json"
-MODEL_BASE_PATH = "/opt/vosk_models"
+MODEL_BASE_PATH = f"{HOME}/.vosk_models"
 MODEL_LIST_CACHE_PATH = Path(MODEL_BASE_PATH, "model-list.json")
 
 class Vosk():
