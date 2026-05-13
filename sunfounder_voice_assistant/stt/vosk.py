@@ -2,6 +2,7 @@ import logging
 import queue
 import wave
 import requests
+from urllib.request import urlopen
 import sounddevice as sd
 import time
 import threading  # 用于终止控制
@@ -21,6 +22,10 @@ MODEL_LIST_URL = MODEL_PRE_URL + "model-list.json"
 MODEL_BASE_PATH = f"{HOME}/.vosk_models"
 MODEL_LIST_CACHE_PATH = Path(MODEL_BASE_PATH, "model-list.json")
 
+# Suppress noisy urllib3/requests connection errors — we handle them with our own warnings
+logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+logging.getLogger("requests").setLevel(logging.CRITICAL)
+
 class Vosk():
     """ Vosk STT class """
 
@@ -39,7 +44,7 @@ class Vosk():
             Path(MODEL_BASE_PATH).mkdir(parents=True)
 
         self.log = log or logging.getLogger(__name__)
-        self.update_model_list()
+        self._load_model_list()
         SetLogLevel(-1)
         self.downloading = False
         self.stop_downloading_event = threading.Event()
@@ -79,54 +84,67 @@ class Vosk():
         model = Model(model_path)
         self.recognizer = KaldiRecognizer(model, self._samplerate)
 
+    def _load_model_list(self):
+        """Load model list from local cache or built-in defaults (offline, no network)."""
+        models = None
+
+        if MODEL_LIST_CACHE_PATH.exists():
+            try:
+                with open(MODEL_LIST_CACHE_PATH, "r", encoding="utf-8") as f:
+                    all_models = json.load(f)
+                models = [model for model in all_models if
+                         model["type"] == "small" and model["obsolete"] == "false"]
+            except Exception:
+                pass
+
+        if not models:
+            models = DEFAULT_MODELS.copy()
+
+        self.available_models = models
+        self.available_languages = [model["lang"] for model in self.available_models]
+        self.available_model_names = [model["name"] for model in self.available_models]
+
     def update_model_list(self):
-        """ Update available models
-        
-        Try to fetch model list from network. If network is unavailable,
-        load from cache. If no cache exists, use default model list.
-        Successfully fetched model list will be saved to cache for next use.
+        """Fetch latest model list from network and save to cache.
+
+        Call this manually when you want to check for new models online.
+        Falls back to local cache if network is unavailable.
         """
         models = None
-        
-        # Try to fetch from network
+
         try:
-            response = requests.get(MODEL_LIST_URL, timeout=10)
-            response.raise_for_status()
-            all_models = response.json()
+            with urlopen(MODEL_LIST_URL, timeout=5) as response:
+                all_models = json.load(response)
             models = [model for model in all_models if
                     model["type"] == "small" and model["obsolete"] == "false"]
-            self.log.info(f"Successfully fetched model list from network: {len(models)} models")
-            
-            # Save to cache
-            try:
-                with open(MODEL_LIST_CACHE_PATH, "w", encoding="utf-8") as f:
-                    json.dump(all_models, f, ensure_ascii=False, indent=2)
-                self.log.debug(f"Model list cached to {MODEL_LIST_CACHE_PATH}")
-            except Exception as e:
-                self.log.warning(f"Failed to cache model list: {e}")
-                
-        except Exception as e:
-            self.log.warning(f"Failed to fetch model list from network: {e}")
-            
-            # Try to load from cache
+            self.log.info(f"Model list updated from network ({len(models)} models)")
+
+            if models:
+                try:
+                    with open(MODEL_LIST_CACHE_PATH, "w", encoding="utf-8") as f:
+                        json.dump(all_models, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+
+        except Exception:
+            self.log.warning("Network unavailable, using local model list...")
             if MODEL_LIST_CACHE_PATH.exists():
                 try:
                     with open(MODEL_LIST_CACHE_PATH, "r", encoding="utf-8") as f:
                         all_models = json.load(f)
                     models = [model for model in all_models if
                             model["type"] == "small" and model["obsolete"] == "false"]
-                    self.log.info(f"Loaded model list from cache: {len(models)} models")
-                except Exception as e:
-                    self.log.warning(f"Failed to load model list from cache: {e}")
-            
-            # Use default models if no models available
-            if models is None:
-                models = DEFAULT_MODELS.copy()
-                self.log.info(f"Using default model list: {len(models)} models")
-        
-        self.available_models = models
-        self.available_languages = [model["lang"] for model in self.available_models]
-        self.available_model_names = [model["name"] for model in self.available_models]
+                    self.log.info(f"Model list loaded from cache ({len(models)} models)")
+                except Exception:
+                    pass
+
+        if not models:
+            self.log.warning("No local model list available, keeping current list")
+
+        if models:
+            self.available_models = models
+            self.available_languages = [model["lang"] for model in self.available_models]
+            self.available_model_names = [model["name"] for model in self.available_models]
 
     def wait_until_heard(self, wake_words=None, print_callback=lambda x: print(f"heard: \x1b[K{x}", end="\r", flush=True)):
         """ Wait until heard a wake word
@@ -520,10 +538,10 @@ class Vosk():
                         self.log.info(f"Download cancelled: {str(e)}")
                     
                     retries += 1
-                    self.log.error(f"Download attempt {retries}/{max_retries} failed: {str(e)}")
-                    
-                    if retries >= max_retries:
-                        self.log.error(f"Reached maximum retry count ({max_retries}), download failed")
+                    if retries < max_retries:
+                        self.log.info(f"Retrying download ({retries}/{max_retries})...")
+                    else:
+                        self.log.warning(f"Download failed after {max_retries} attempts. Check network connection.")
                     
                     # Wait before retrying (exponential backoff)
                     wait_time = 2** retries
@@ -531,10 +549,10 @@ class Vosk():
                     time.sleep(wait_time)
                     
         except Exception as e:
-            self.log.error(f"Download terminated: {str(e)}")
+            self.log.warning(f"Download stopped, will retry later. ({str(e)})")
             # 终止后保留部分下载文件（以便后续续传），如果需要删除可改为os.remove(zip_path)
             if os.path.exists(zip_path):
-                self.log.info(f"Partial download saved to {zip_path}")
+                self.log.debug(f"Partial download saved to {zip_path}")
         finally:
             self.downloading = False
             self.stop_downloading_event.clear()  # 重置终止事件
