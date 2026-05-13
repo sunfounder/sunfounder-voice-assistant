@@ -1,19 +1,44 @@
+import json
 import os
 import wave
 from pathlib import Path
 from typing import Callable, List
+from urllib.error import URLError
 from urllib.request import urlopen
 from piper import PiperVoice
 from piper.download_voices import _needs_download, VOICE_PATTERN, URL_FORMAT
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf
 from tqdm import tqdm
 
-from .piper_models import PIPER_MODELS, MODELS, COUNTRYS
+from .piper_models import PIPER_MODELS as _DEFAULT_PIPER_MODELS, MODELS as _DEFAULT_MODELS, COUNTRYS as _DEFAULT_COUNTRYS
 from .._audio_player import AudioPlayer
 from .._base import _Base
 
 HOME = os.path.expanduser("~")
 PIPER_MODEL_DIR = f"{HOME}/.piper_models"
+VOICES_JSON_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/main/voices.json?download=true"
+PIPER_MODEL_LIST_CACHE_PATH = Path(PIPER_MODEL_DIR, "voices.json")
+
+def _parse_voices_json(voices_dict: dict) -> dict:
+    """Parse HuggingFace voices.json format into PIPER_MODELS format.
+
+    Input: {"en_US-lessac-medium": {...}, "en_US-lessac-low": {...}, ...}
+    Output: {"en_US": {"lessac": ["en_US-lessac-low", "en_US-lessac-medium"], ...}, ...}
+    """
+    models = {}
+    for voice_id in voices_dict:
+        match = VOICE_PATTERN.match(voice_id)
+        if not match:
+            continue
+        lang_code = match.group("lang_family") + "_" + match.group("lang_region")
+        voice_name = match.group("voice_name")
+        if lang_code not in models:
+            models[lang_code] = {}
+        if voice_name not in models[lang_code]:
+            models[lang_code][voice_name] = []
+        models[lang_code][voice_name].append(voice_id)
+    return models
+
 
 class Piper(_Base):
     """ Piper TTS engine.
@@ -30,12 +55,90 @@ class Piper(_Base):
         if not os.path.exists(PIPER_MODEL_DIR):
             os.makedirs(PIPER_MODEL_DIR, 0o777)
             os.chown(PIPER_MODEL_DIR, 1000, 1000)
+        self._models = list(_DEFAULT_MODELS)
+        self._piper_models = {k: dict(v) for k, v in _DEFAULT_PIPER_MODELS.items()}
+        self._countrys = list(_DEFAULT_COUNTRYS)
+        self._load_model_list()
         self.model = None
         if model is not None:
             self.set_model(model)
         else:
             self.piper = None
-        
+
+    def _load_model_list(self):
+        """Load model list from local cache or built-in defaults (offline, no network)."""
+        models = None
+        piper_models = None
+
+        if PIPER_MODEL_LIST_CACHE_PATH.exists():
+            try:
+                with open(PIPER_MODEL_LIST_CACHE_PATH, "r", encoding="utf-8") as f:
+                    voices_dict = json.load(f)
+                piper_models = _parse_voices_json(voices_dict)
+                models = []
+                for voices in piper_models.values():
+                    for model_list in voices.values():
+                        models.extend(model_list)
+            except Exception:
+                pass
+
+        if not models:
+            piper_models = {k: dict(v) for k, v in _DEFAULT_PIPER_MODELS.items()}
+            models = list(_DEFAULT_MODELS)
+
+        self._piper_models = piper_models
+        self._models = models
+        self._countrys = list(piper_models.keys())
+
+    def update_model_list(self):
+        """Fetch latest model list from network and save to cache.
+
+        Call this manually when you want to check for new models online.
+        Falls back to local cache if network is unavailable.
+        """
+        models = None
+        piper_models = None
+
+        try:
+            with urlopen(VOICES_JSON_URL, timeout=5) as response:
+                voices_dict = json.load(response)
+            piper_models = _parse_voices_json(voices_dict)
+            models = []
+            for voices in piper_models.values():
+                for model_list in voices.values():
+                    models.extend(model_list)
+            self.log.info(f"Model list updated from network ({len(models)} models)")
+
+            if models:
+                try:
+                    with open(PIPER_MODEL_LIST_CACHE_PATH, "w", encoding="utf-8") as f:
+                        json.dump(voices_dict, f, ensure_ascii=False, indent=2)
+                except Exception:
+                    pass
+
+        except Exception:
+            self.log.warning("Network unavailable, using local model list...")
+            if PIPER_MODEL_LIST_CACHE_PATH.exists():
+                try:
+                    with open(PIPER_MODEL_LIST_CACHE_PATH, "r", encoding="utf-8") as f:
+                        voices_dict = json.load(f)
+                    piper_models = _parse_voices_json(voices_dict)
+                    models = []
+                    for voices in piper_models.values():
+                        for model_list in voices.values():
+                            models.extend(model_list)
+                    self.log.info(f"Model list loaded from cache ({len(models)} models)")
+                except Exception:
+                    pass
+
+        if not models:
+            self.log.warning("No local model list available, keeping current list")
+
+        if models:
+            self._piper_models = piper_models
+            self._models = models
+            self._countrys = list(piper_models.keys())
+
     def get_language(self) -> str:
         """ Get language from model.
 
@@ -184,9 +287,9 @@ class Piper(_Base):
             List[str]: available models
         """
         if country is None:
-            return MODELS
+            return self._models
         else:
-            return PIPER_MODELS.get(country, [])
+            return self._piper_models.get(country, [])
 
     def available_countrys(self) -> List[str]:
         """ Get available countrys.
@@ -194,7 +297,7 @@ class Piper(_Base):
         Returns:
             List[str]: available countrys
         """
-        return COUNTRYS
+        return self._countrys
 
     def get_model_path(self, model: str) -> str:
         """ Get model path.
@@ -216,7 +319,7 @@ class Piper(_Base):
         Raises:
             ValueError: Model not found
         """
-        if model in MODELS:
+        if model in self._models:
             model_path = self.get_model_path(model)
             if not self.is_model_downloaded(model):
                 self.log.warning(f"Model {model} not downloaded, downloading...")
