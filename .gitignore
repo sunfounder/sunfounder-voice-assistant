@@ -3,3 +3,4 @@
 __pycache__
 *secret*
 docs/build/*
+.claude
