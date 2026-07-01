@@ -12,6 +12,7 @@ Usage::
 
 import asyncio
 import edge_tts
+import subprocess
 
 from .._audio_player import AudioPlayer
 from .._base import _Base
@@ -159,8 +160,10 @@ class EdgeTTS(_Base):
         """
         file = "./edge_tts.mp3"
         self.tts(text, file)
+        wav = "./edge_tts.wav"
+        subprocess.run(["sox", file, wav], capture_output=True)
         with AudioPlayer(gain=self._gain) as player:
-            player.play_file(file)
+            player.play_file(wav)
 
     def set_voice(self, voice: str) -> None:
         """Set the voice by its short name (e.g. ``en-US-AriaNeural``).
