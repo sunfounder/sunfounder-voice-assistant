@@ -157,7 +157,7 @@ class EdgeTTS(_Base):
         Args:
             text: Text to speak.
         """
-        file = "./audio_output/edge_tts.mp3"
+        file = "./edge_tts.mp3"
         self.tts(text, file)
         with AudioPlayer(gain=self._gain) as player:
             player.play_file(file)
