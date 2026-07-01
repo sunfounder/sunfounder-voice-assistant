@@ -23,7 +23,8 @@ dependencies = [
   'piper-tts',
   'vosk',
   'pyaudio',
-  'sounddevice'
+  'sounddevice',
+  'edge-tts>=6.0'
 ]
 
 [project.urls]
