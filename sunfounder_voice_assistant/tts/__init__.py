@@ -104,9 +104,10 @@ Example:
     >>> tts.say("I'm so sad right now.", instructions="say it sadly")
 """
 
+from .edge_tts import EdgeTTS
 from .espeak import Espeak
 from .pico2wave import Pico2Wave
 from .piper import Piper
 from .openai_tts import OpenAI_TTS
 
-__all__ = ["Espeak", "Pico2Wave", "Piper", "OpenAI_TTS"]
+__all__ = ["EdgeTTS", "Espeak", "Pico2Wave", "Piper", "OpenAI_TTS"]
