@@ -17,7 +17,7 @@ tts = EdgeTTS(voice="en-US-AriaNeural")
 # from sunfounder_voice_assistant.tts import Espeak
 # tts = Espeak()
 
-# OpenAI TTS — cloud TTS via gpt-4o-mini-tts, 10 voices
+# OpenAI TTS — cloud TTS via gpt-4o-mini-tts
 # from sunfounder_voice_assistant.tts import OpenAI_TTS
 # tts = OpenAI_TTS(voice="coral", api_key=API_KEY)
 
