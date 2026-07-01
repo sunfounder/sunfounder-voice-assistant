@@ -4,7 +4,7 @@ from .tts import Piper as TTS
 
 from ._keyboard_input import KeyboardInput
 
-from typing import Callable
+from typing import Any, Callable, Optional
 
 import time
 
@@ -47,6 +47,7 @@ class VoiceAssistant:
         name (str, optional): Robot name, default is NAME
         with_image (bool, optional): Enable image, need to set up a multimodal language model, default is WITH_IMAGE
         tts_model (str, optional): Text-to-speech model, default is TTS_MODEL
+        tts (object, optional): Pre-configured TTS engine instance. If provided, ``tts_model`` is ignored.
         stt_language (str, optional): Speech-to-text language, default is STT_LANGUAGE
         keyboard_enable (bool, optional): Enable keyboard input, default is KEYBOARD_ENABLE
         wake_enable (bool, optional): Enable wake word, default is WAKE_ENABLE
@@ -62,6 +63,7 @@ class VoiceAssistant:
             name: str = NAME,
             with_image: bool = WITH_IMAGE,
             tts_model: str = TTS_MODEL,
+            tts: Optional[Any] = None,
             stt_language: str = STT_LANGUAGE,
             keyboard_enable: bool = KEYBOARD_ENABLE,
             wake_enable: bool = WAKE_ENABLE,
@@ -82,7 +84,7 @@ class VoiceAssistant:
         self.disable_think = disable_think
         self.instructions = instructions.format(name=name)
 
-        self.tts = TTS(model=tts_model)
+        self.tts = tts or TTS(model=tts_model)
         self.stt = STT(language=stt_language)
         self.llm.set_instructions(self.instructions)
         self.stt.set_wake_words(self.wake_word)
